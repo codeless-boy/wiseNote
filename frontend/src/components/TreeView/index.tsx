@@ -25,10 +25,7 @@ export function TreeView() {
     })
   }
 
-  const handleExpandNotebook = async (notebookId: string) => {
-    if (!expandedIds.has(notebookId)) {
-      handleToggle(notebookId)
-    }
+  const handleSelectNotebook = async (notebookId: string) => {
     await fetchNotes(notebookId)
   }
 
@@ -84,7 +81,7 @@ export function TreeView() {
         <div
           className="flex items-center gap-1 px-2 py-1 cursor-pointer hover:bg-gray-100"
           style={{ paddingLeft: `${level * 16 + 8}px` }}
-          onClick={() => handleExpandNotebook(notebook.id)}
+          onClick={() => handleSelectNotebook(notebook.id)}
         >
           {hasChildren && (
             <button onClick={(e) => { e.stopPropagation(); handleToggle(notebook.id) }}>
