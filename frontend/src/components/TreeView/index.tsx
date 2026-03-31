@@ -26,6 +26,9 @@ export function TreeView() {
   }
 
   const handleSelectNotebook = async (notebookId: string) => {
+    if (!expandedIds.has(notebookId)) {
+      handleToggle(notebookId)
+    }
     await fetchNotes(notebookId)
   }
 
