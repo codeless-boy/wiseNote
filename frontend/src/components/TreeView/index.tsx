@@ -5,7 +5,7 @@ import type { Notebook, Note } from '@/types'
 
 export function TreeView() {
   const { notebooks, createNotebook, fetchNotebooks } = useNotebookStore()
-  const { notes, rootNotes, currentNote, fetchNotes, fetchRootNotes, createNote, setCurrentNote } = useNoteStore()
+  const { notesByNotebook, rootNotes, currentNote, fetchNotes, fetchRootNotes, createNote, setCurrentNote } = useNoteStore()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
@@ -48,11 +48,11 @@ export function TreeView() {
     await createNote(notebookId)
   }
 
-  const getRootNotebooks = () => notebooks.filter(n => n.parentId ===null)
+  const getRootNotebooks = () => notebooks.filter(n => n.parentId === null)
 
   const getChildNotebooks = (parentId: string) => notebooks.filter(n => n.parentId === parentId)
 
-  const getNotesForNotebook = (notebookId: string) => notes.filter(n => n.notebookId === notebookId)
+  const getNotesForNotebook = (notebookId: string) => notesByNotebook[notebookId] || []
 
   const renderNote = (note: Note, level: number) => {
     const isSelected = currentNote?.id === note.id

@@ -4,13 +4,14 @@ import * as db from '@/db/notes'
 import * as dbVersions from '@/db/versions'
 
 interface NoteState {
-  notes: Note[]
+  notesByNotebook: Record<string, Note[]>
   rootNotes: Note[]
   currentNote: Note | null
   versions: NoteVersion[]
   loading: boolean
   
-  fetchNotes: (notebookId: string | null) => Promise<void>
+  getNotesByNotebook: (notebookId: string) => Note[]
+  fetchNotes: (notebookId: string) => Promise<void>
   fetchRootNotes: () => Promise<void>
   createNote: (notebookId: string | null) => Promise<Note>
   updateNote: (id: string, updates: Partial<Note>) => Promise<void>
@@ -22,16 +23,26 @@ interface NoteState {
 }
 
 export const useNoteStore = create<NoteState>((set, get) => ({
-  notes: [],
+  notesByNotebook: {},
   rootNotes: [],
   currentNote: null,
   versions: [],
   loading: false,
 
+  getNotesByNotebook: (notebookId: string) => {
+    return get().notesByNotebook[notebookId] || []
+  },
+
   fetchNotes: async (notebookId) => {
+    const cached = get().notesByNotebook[notebookId]
+    if (cached) return
+    
     set({ loading: true })
     const notes = await db.getNotesByNotebook(notebookId)
-    set({ notes, loading: false })
+    set({ 
+      notesByNotebook: { ...get().notesByNotebook, [notebookId]: notes },
+      loading: false 
+    })
   },
 
   fetchRootNotes: async () => {
@@ -55,18 +66,36 @@ export const useNoteStore = create<NoteState>((set, get) => ({
     if (notebookId === null) {
       set({ rootNotes: [...get().rootNotes, note], currentNote: note })
     } else {
-      set({ notes: [...get().notes, note], currentNote: note })
+      const existing = get().notesByNotebook[notebookId] || []
+      set({ 
+        notesByNotebook: { ...get().notesByNotebook, [notebookId]: [...existing, note] },
+        currentNote: note 
+      })
     }
     return note
   },
 
   updateNote: async (id, updates) => {
-    const note = get().notes.find(n => n.id === id)
-    if (!note) return
+    const state = get()
+    let foundNotebookId: string | null = null
+    let note: Note | undefined
+    
+    for (const [nid, notes] of Object.entries(state.notesByNotebook)) {
+      note = notes.find(n => n.id === id)
+      if (note) {
+        foundNotebookId = nid
+        break
+      }
+    }
+    
+    if (!note|| !foundNotebookId) return
     const updated = { ...note, ...updates, updatedAt: Date.now() }
     await db.updateNote(updated)
     set({
-      notes: get().notes.map(n => n.id === id ? updated : n),
+      notesByNotebook: {
+        ...get().notesByNotebook,
+        [foundNotebookId]: get().notesByNotebook[foundNotebookId].map(n => n.id === id ? updated : n)
+      },
       currentNote: get().currentNote?.id === id ? updated : get().currentNote
     })
   },
@@ -74,8 +103,19 @@ export const useNoteStore = create<NoteState>((set, get) => ({
   deleteNote: async (id) => {
     await db.deleteNote(id)
     await dbVersions.deleteVersionsByNote(id)
+    
+    const state = get()
+    const newNotesByNotebook = { ...state.notesByNotebook }
+    
+    for (const [nid, notes] of Object.entries(newNotesByNotebook)) {
+      if (notes.some(n => n.id === id)) {
+        newNotesByNotebook[nid] = notes.filter(n => n.id !== id)
+        break
+      }
+    }
+    
     set({
-      notes: get().notes.filter(n => n.id !== id),
+      notesByNotebook: newNotesByNotebook,
       currentNote: get().currentNote?.id === id ? null : get().currentNote
     })
   },
