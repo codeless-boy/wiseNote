@@ -1,208 +1,153 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useNotebookStore, useNoteStore } from '@/store'
-import { ChevronRight, ChevronDown, Plus, Folder, FileText, AlertCircle } from 'lucide-react'
-import type { Notebook, Note } from '@/types'
+import { useState, useEffect } from 'react'
+import { useNoteStore } from '@/store'
+import { Tree } from './Tree'
+import { TreeNode } from './TreeNode'
+import { Toolbar } from './Toolbar'
+import { useTreeAdapter } from './hooks/useTreeAdapter'
+import { useTreeActions } from './hooks/useTreeActions'
+import type { TreeNode as TreeNodeType } from './types'
+import { useNotebookStore } from '@/store/notebookStore'
 
 export function TreeView() {
-  const { notebooks, createNotebook, fetchNotebooks } = useNotebookStore()
-  const { notesByNotebook, rootNotes, currentNote, fetchNotes, fetchRootNotes, createNote, setCurrentNote } = useNoteStore()
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-  const [error, setError] = useState<string | null>(null)
-
+  const { fetchNotebooks } = useNotebookStore()
+  const { fetchRootNotes } = useNoteStore()
+  const { treeData } = useTreeAdapter()
+  const {
+    onCreateNotebook,
+    onCreateNote,
+    onRename,
+    onDeleteNotebook,
+    onDeleteNote,
+  } = useTreeActions()
+  
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
+  
   useEffect(() => {
     fetchNotebooks()
     fetchRootNotes()
   }, [fetchNotebooks, fetchRootNotes])
-
-  const handleToggle = (id: string) => {
-    setExpandedIds(prev => {
-      const newExpanded = new Set(prev)
-      if (newExpanded.has(id)) {
-        newExpanded.delete(id)
-      } else {
-        newExpanded.add(id)
-      }
-      return newExpanded
-    })
-  }
-
-  const handleSelectNotebook = async (notebookId: string) => {
-    if (!expandedIds.has(notebookId)) {
-      handleToggle(notebookId)
-    }
-    await fetchNotes(notebookId)
-  }
-
-  const checkDuplicateName = useCallback((name: string, parentId: string | null, excludeId?: string): boolean => {
-    const siblingNotebooks = notebooks.filter(n => n.parentId === parentId && n.id !== excludeId)
-    const siblingNotes = parentId === null 
-      ? rootNotes 
-      : (notesByNotebook[parentId] || [])
-    
-    const notebookExists = siblingNotebooks.some(n => n.name === name)
-    const noteExists = siblingNotes.some(n => n.title === name)
-    
-    return notebookExists || noteExists
-  }, [notebooks, rootNotes, notesByNotebook])
-
+  
   const handleCreateNotebook = async () => {
-    const baseName = '新建笔记本'
-    let name = baseName
-    let counter = 1
-    
-    while (checkDuplicateName(name, null)) {
-      name = `${baseName} ${counter}`
-      counter++
+    const id = await onCreateNotebook(null)
+    if (id) {
+      setEditingId(id)
     }
-    
-    setError(null)
-    await createNotebook(name)
   }
-
+  
   const handleCreateRootNote = async () => {
-    const baseTitle = '无标题'
-    let title = baseTitle
-    let counter = 1
-    
-    while (checkDuplicateName(title, null)) {
-      title = `${baseTitle} ${counter}`
-      counter++
+    const id = await onCreateNote(null)
+    if (id) {
+      setEditingId(id)
     }
-    
-    setError(null)
-    await createNote(null)
   }
-
+  
   const handleCreateNoteInNotebook = async (notebookId: string) => {
-    if (!expandedIds.has(notebookId)) {
-      handleToggle(notebookId)
+    const id = await onCreateNote(notebookId)
+    if (id) {
+      setEditingId(id)
     }
-    await fetchNotes(notebookId)
-    
-    const baseTitle = '无标题'
-    let title = baseTitle
-    let counter = 1
-    
-    while (checkDuplicateName(title, notebookId)) {
-      title = `${baseTitle} ${counter}`
-      counter++
+  }
+  
+  const handleCreateSubNotebook = async (parentId: string) => {
+    const id = await onCreateNotebook(parentId)
+    if (id) {
+      setEditingId(id)
     }
+  }
+  
+  const handleRename = (nodeId: string) => {
+    setEditingId(nodeId)
+  }
+  
+  const handleEditComplete = async (nodeId: string, newName: string) => {
+    const node = findNode(treeData, nodeId)
+    if (!node) return
     
-    await createNote(notebookId)
+    try {
+      await onRename(nodeId, newName, node.type, node.parentId)
+      setEditingId(null)
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message)
+      }
+    }
   }
-
-  const getRootNotebooks = () => {
-    return notebooks
-      .filter(n => n.parentId === null)
-      .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+  
+  const handleDelete = async (
+    nodeId: string,
+    type: 'notebook' | 'note',
+    parentId: string | null
+  ) => {
+    if (type === 'notebook') {
+      await onDeleteNotebook(nodeId)
+    } else {
+      await onDeleteNote(nodeId, parentId)
+    }
   }
-
-  const getChildNotebooks = (parentId: string) => {
-    return notebooks
-      .filter(n => n.parentId === parentId)
-      .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
-  }
-
-  const getNotesForNotebook = (notebookId: string) => {
-    return (notesByNotebook[notebookId] || [])
-      .sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
-  }
-
-  const getSortedRootNotes = () => {
-    return [...rootNotes].sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
-  }
-
-  const renderNote = (note: Note, level: number) => {
-    const isSelected = currentNote?.id === note.id
-    return (
-      <div
-        key={note.id}
-        className={`flex items-center gap-1 px-2 py-1 cursor-pointer hover:bg-gray-100 ${
-          isSelected ? 'bg-blue-50' : ''
-        }`}
-        style={{ paddingLeft: `${level * 16 + 16}px` }}
-        onClick={() => setCurrentNote(note)}
-      >
-        <FileText size={14} className="text-gray-500" />
-        <span className="text-sm truncate">{note.title}</span>
-      </div>
+  
+  const handleSelectNote = (noteId: string) => {
+    const { setCurrentNote, notesByNotebook, rootNotes } = useNoteStore.getState()
+    
+    const note = [...rootNotes, ...Object.values(notesByNotebook).flat()].find(
+      (n) => n.id === noteId
     )
-  }
-
-  const renderNotebook = (notebook: Notebook, level: number = 0): JSX.Element[] => {
-    const children = getChildNotebooks(notebook.id)
-    const notebookNotes = getNotesForNotebook(notebook.id)
-    const hasChildren = children.length > 0 || notebookNotes.length > 0
-    const isExpanded = expandedIds.has(notebook.id)
-
-    const elements: JSX.Element[] = []
-
-    elements.push(
-      <div key={notebook.id}>
-        <div
-          className="flex items-center gap-1 px-2 py-1 cursor-pointer hover:bg-gray-100"
-          style={{ paddingLeft: `${level * 16 + 8}px` }}
-          onClick={() => handleSelectNotebook(notebook.id)}
-        >
-          {hasChildren ? (
-            <button onClick={(e) => { e.stopPropagation(); handleToggle(notebook.id) }}>
-              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </button>
-          ) : (
-            <span style={{ width: '14px' }} />
-          )}
-          <Folder size={14} className="text-gray-500" />
-          <span className="text-sm truncate flex-1">{notebook.name}</span>
-          <button
-            onClick={(e) => { e.stopPropagation(); handleCreateNoteInNotebook(notebook.id) }}
-            className="p-0.5 hover:bg-gray-200 rounded opacity-0 hover:opacity-100"
-          >
-            <Plus size={12} />
-          </button>
-        </div>
-      </div>
-    )
-
-    if (isExpanded) {
-      children.forEach(child => {
-        elements.push(...renderNotebook(child, level + 1))
-      })
-      notebookNotes.forEach(note => {
-        elements.push(renderNote(note, level))
-      })
+    
+    if (note) {
+      setCurrentNote(note)
+      setSelectedId(noteId)
     }
-
-    return elements
   }
-
+  
+  const handleExpandAll = () => {
+    // React-Arborist 会处理展开逻辑
+    // 需要通过 ref 访问树 API
+  }
+  
+  const handleCollapseAll = () => {
+    // React-Arborist 会处理折叠逻辑
+  }
+  
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-center gap-3 px-2 py-3 border-b">
-        <button 
-          onClick={handleCreateNotebook} 
-          className="p-2 hover:bg-gray-100 rounded transition-colors" 
-          title="新建笔记本"
-        >
-          <Folder size={18} />
-        </button>
-        <button 
-          onClick={handleCreateRootNote} 
-          className="p-2 hover:bg-gray-100 rounded transition-colors" 
-          title="新建笔记"
-        >
-          <FileText size={18} />
-        </button>
-      </div>
-      {error && (
-        <div className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 text-sm">
-          <AlertCircle size={14} />
-          <span>{error}</span>
-        </div>
-      )}
-      <div className="flex-1 overflow-auto">
-        {getSortedRootNotes().map(note => renderNote(note, 0))}
-        {getRootNotebooks().map(notebook => renderNotebook(notebook))}
-      </div>
+      <Toolbar
+        onCreateNotebook={handleCreateNotebook}
+        onCreateRootNote={handleCreateRootNote}
+        onExpandAll={handleExpandAll}
+        onCollapseAll={handleCollapseAll}
+      />
+      
+      <Tree
+        data={treeData}
+        selectedId={selectedId}
+        onSelect={(nodeId, type) => {
+          if (type === 'note') {
+            handleSelectNote(nodeId)
+          }
+        }}
+      >
+        {(props) => (
+          <TreeNode
+            {...props}
+            onCreateNote={handleCreateNoteInNotebook}
+            onCreateSubNotebook={handleCreateSubNotebook}
+            onRename={handleRename}
+            onDelete={handleDelete}
+            onSelectNote={handleSelectNote}
+            isEditing={editingId === props.node.id}
+            onEditComplete={handleEditComplete}
+          />
+        )}
+      </Tree>
     </div>
   )
+}
+
+function findNode(nodes: TreeNodeType[], id: string): TreeNodeType | null {
+  for (const node of nodes) {
+    if (node.id === id) return node
+    const found = findNode(node.children, id)
+    if (found) return found
+  }
+  return null
 }
