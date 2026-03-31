@@ -1,12 +1,26 @@
+import { useEffect } from 'react'
 import { useState } from 'react'
 import { TriLayout } from '@/components/TriLayout'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { NotebookList } from '@/components/NotebookList'
+import { SearchPanel } from '@/components/SearchPanel'
+import { TagPanel } from '@/components/TagPanel'
+import { MainContent } from '@/components/MainContent'
+import { useNotebookStore, useTagStore } from '@/store'
 import { FileText, Search, Tag, Settings } from 'lucide-react'
 
 function App() {
   const [activeId, setActiveId] = useState('notebooks')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [sidebarWidth, setSidebarWidth] = useState(0.2)
+
+  const { fetchNotebooks } = useNotebookStore()
+  const { fetchTags } = useTagStore()
+
+  useEffect(() => {
+    fetchNotebooks()
+    fetchTags()
+  }, [fetchNotebooks, fetchTags])
 
   const activityItems = [
     { id: 'notebooks', icon: <FileText />, title: '笔记本' },
@@ -35,11 +49,11 @@ function App() {
   const renderSidebarContent = () => {
     switch (activeId) {
       case 'notebooks':
-        return <div className="p-4">笔记本列表</div>
+        return <NotebookList />
       case 'search':
-        return <div className="p-4">搜索面板</div>
+        return <SearchPanel />
       case 'tags':
-        return <div className="p-4">标签管理</div>
+        return <TagPanel />
       default:
         return null
     }
@@ -63,14 +77,7 @@ function App() {
         </TriLayout.Sidebar>
 
         <TriLayout.Content>
-          <div className="flex h-full">
-            <div className="w-64 border-r bg-white">
-              <div className="p-4 border-b font-medium">笔记列表</div>
-            </div>
-            <div className="flex-1 bg-white">
-              <div className="p-4 border-b font-medium">笔记编辑器</div>
-            </div>
-          </div>
+          <MainContent />
         </TriLayout.Content>
       </TriLayout>
     </TooltipProvider>
