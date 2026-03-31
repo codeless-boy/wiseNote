@@ -13,7 +13,6 @@ export function NotebookItem({
   notebook,isSelected,
   onSelect,
   onRename,
-  onDelete,
 }: NotebookItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState(notebook.name)

@@ -7,6 +7,7 @@ import { SearchPanel } from '@/components/SearchPanel'
 import { TagPanel } from '@/components/TagPanel'
 import { MainContent } from '@/components/MainContent'
 import { useNotebookStore, useTagStore } from '@/store'
+import { seedDemoData } from '@/db/seed'
 import { FileText, Search, Tag, Settings } from 'lucide-react'
 
 function App() {
@@ -18,8 +19,10 @@ function App() {
   const { fetchTags } = useTagStore()
 
   useEffect(() => {
-    fetchNotebooks()
-    fetchTags()
+    seedDemoData().then(() => {
+      fetchNotebooks()
+      fetchTags()
+    })
   }, [fetchNotebooks, fetchTags])
 
   const activityItems = [

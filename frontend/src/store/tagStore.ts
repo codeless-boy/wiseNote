@@ -26,7 +26,7 @@ export const useTagStore = create<TagState>((set, get) => ({
     const tag: Tag = {
       id: crypto.randomUUID(),
       name,
-      color,
+      color: color ?? null,
       createdAt: Date.now(),
     }
     await db.createTag(tag)
@@ -37,7 +37,7 @@ export const useTagStore = create<TagState>((set, get) => ({
   updateTag: async (id, name, color) => {
     const tag = get().tags.find(t => t.id === id)
     if (!tag) return
-    const updated = { ...tag, name, color }
+    const updated = { ...tag, name, color: color ?? null }
     await db.updateTag(updated)
     set({
       tags: get().tags.map(t => t.id === id ? updated : t)
