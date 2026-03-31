@@ -27,6 +27,26 @@ export async function seedDemoData() {
   }
   await createNotebook(notebook2)
 
+  // Create root-level note (demonstrates new feature)
+  const rootNote: Note = {
+    id: crypto.randomUUID(),
+    title: '快速笔记',
+    content: `# 快速笔记
+
+这是一个根级别的笔记，不需要放在任何笔记本中。
+
+你可以：
+- 在根目录快速创建笔记
+- 将笔记整理到笔记本中
+- 自由组织你的知识库`,
+    notebookId: null,
+    tags: [],
+    links: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }
+  await createNote(rootNote)
+
   // Create demo notes
   const note1: Note = {
     id: crypto.randomUUID(),
