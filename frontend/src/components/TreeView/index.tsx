@@ -117,16 +117,21 @@ export function TreeView() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between px-2 py-2 border-b">
-        <span className="font-medium text-sm">笔记本</span>
-        <div className="flex gap-1">
-          <button onClick={handleCreateNotebook} className="p-1 hover:bg-gray-100 rounded" title="新建笔记本">
-            <Folder size={14} />
-          </button>
-          <button onClick={handleCreateRootNote} className="p-1 hover:bg-gray-100 rounded" title="新建根笔记">
-            <FileText size={14} />
-          </button>
-        </div>
+      <div className="flex items-center justify-center gap-3 px-2 py-3 border-b">
+        <button 
+          onClick={handleCreateNotebook} 
+          className="p-2 hover:bg-gray-100 rounded transition-colors" 
+          title="新建笔记本"
+        >
+          <Folder size={18} />
+        </button>
+        <button 
+          onClick={handleCreateRootNote} 
+          className="p-2 hover:bg-gray-100 rounded transition-colors" 
+          title="新建笔记"
+        >
+          <FileText size={18} />
+        </button>
       </div>
       <div className="flex-1 overflow-auto">
         {rootNotes.map(note => renderNote(note, 0))}
