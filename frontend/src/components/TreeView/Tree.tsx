@@ -1,6 +1,5 @@
 import React from 'react'
 import { Tree as ArboristTree } from 'react-arborist'
-import 'react-arborist/style.css'
 import type { TreeNode } from './types'
 import type { NodeRendererProps } from 'react-arborist'
 
