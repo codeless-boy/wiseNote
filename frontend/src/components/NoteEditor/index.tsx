@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNoteStore } from '@/store'
 import { MDEditor } from '@/components/MDEditor'
 
@@ -6,7 +6,7 @@ export function NoteEditor() {
   const { currentNote, updateNote } = useNoteStore()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (currentNote) {
@@ -15,9 +15,27 @@ export function NoteEditor() {
     }
   }, [currentNote?.id])
 
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const scheduleSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      if (currentNote) {
+        updateNote(currentNote.id, { title, content })
+      }
+    }, 500)
+  }, [currentNote, title, content, updateNote])
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTitle = e.target.value
-    setTitle(newTitle)
+    setTitle(e.target.value)
     scheduleSave()
   }
 
@@ -25,18 +43,6 @@ export function NoteEditor() {
     setContent(newContent)
     scheduleSave()
   }
-
-  const scheduleSave = useCallback(() => {
-    if (saveTimeout) {
-      clearTimeout(saveTimeout)
-    }
-    const timeout = setTimeout(() => {
-      if (currentNote) {
-        updateNote(currentNote.id, { title, content })
-      }
-    }, 500)
-    setSaveTimeout(timeout)
-  }, [currentNote, title, content, updateNote])
 
   if (!currentNote) {
     return (

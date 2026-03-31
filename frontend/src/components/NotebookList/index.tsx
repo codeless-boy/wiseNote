@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNotebookStore } from '@/store'
 import { ChevronRight, ChevronDown, Plus, Folder } from 'lucide-react'
 import type { Notebook } from '@/types'
 
 export function NotebookList() {
-  const { notebooks, currentNotebookId, createNotebook, setCurrentNotebook } = useNotebookStore()
+  const { notebooks, currentNotebookId, createNotebook, setCurrentNotebook, fetchNotebooks } = useNotebookStore()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    fetchNotebooks()
+  }, [fetchNotebooks])
 
   const handleToggle = (id: string) => {
     const newExpanded = new Set(expandedIds)

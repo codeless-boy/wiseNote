@@ -1,25 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSearchStore, useNoteStore } from '@/store'
 import { Search, FileText } from 'lucide-react'
 
 export function SearchPanel() {
   const { query, results, setQuery, search } = useSearchStore()
   const { setCurrentNote } = useNoteStore()
-  const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (debounceTimer) {
-      clearTimeout(debounceTimer)
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
     }
-    const timer = setTimeout(() => {
+    debounceTimerRef.current = setTimeout(() => {
       if (query.trim()) {
         search()
       }
     }, 300)
-    setDebounceTimer(timer)
 
     return () => {
-      if (timer) clearTimeout(timer)
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
     }
   }, [query, search])
 

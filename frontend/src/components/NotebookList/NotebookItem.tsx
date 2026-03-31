@@ -6,7 +6,6 @@ interface NotebookItemProps {
   isSelected: boolean
   onSelect: () => void
   onRename: (name: string) => void
-  onDelete: () => void
 }
 
 export function NotebookItem({

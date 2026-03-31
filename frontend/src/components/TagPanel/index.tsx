@@ -18,8 +18,7 @@ export function TagPanel() {
     setIsCreating(false)
   }
 
-  const handleTagClick = (tagId: string) => {
-    console.log('Filter by tag:', tagId)
+  const handleTagClick = (_tagId: string) => {
   }
 
   return (
