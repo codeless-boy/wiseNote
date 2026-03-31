@@ -1,0 +1,334 @@
+@import "tailwindcss";
+
+.md-editor {
+  @apply border border-gray-200 rounded-lg overflow-hidden bg-white;
+}
+
+.md-editor-dark {
+  @apply bg-gray-800 border-gray-600;
+}
+
+.md-editor-toolbar {
+  @apply flex items-center gap-1 p-2 border-b border-gray-200 bg-gray-50;
+}
+
+.md-editor-dark .md-editor-toolbar {
+  @apply border-gray-600 bg-gray-700;
+}
+
+.md-editor-content {
+  @apply min-h-[200px] p-4 outline-none;
+}
+
+.md-editor-dark .md-editor-content {
+  @apply text-gray-100;
+}
+
+.md-editor .ProseMirror {
+  @apply outline-none min-h-[200px];
+}
+
+.md-editor .ProseMirror p {
+  @apply my-2;
+}
+
+.md-editor .ProseMirror h1 {
+  @apply text-3xl font-bold my-4;
+}
+
+.md-editor .ProseMirror h2 {
+  @apply text-2xl font-semibold my-3;
+}
+
+.md-editor .ProseMirror h3 {
+  @apply text-xl font-medium my-2;
+}
+
+.md-editor .ProseMirror ul,
+.md-editor .ProseMirror ol {
+  @apply pl-6 my-2;
+}
+
+.md-editor .ProseMirror ul {
+  @apply list-disc;
+}
+
+.md-editor .ProseMirror ol {
+  @apply list-decimal;
+}
+
+.md-editor .ProseMirror blockquote {
+  @apply border-l-4 border-gray-300 pl-4 my-2 italic text-gray-600;
+}
+
+.md-editor .ProseMirror pre {
+  @apply bg-gray-100 p-3 rounded my-2 overflow-x-auto;
+}
+
+.md-editor-dark .ProseMirror pre {
+  @apply bg-gray-900 text-gray-100;
+}
+
+.md-editor .ProseMirror code {
+  @apply bg-gray-100 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+.md-editor-dark .ProseMirror code {
+  @apply bg-gray-700 text-gray-100;
+}
+
+.md-editor .ProseMirror img {
+  @apply max-w-full h-auto rounded my-2;
+}
+
+.md-editor .ProseMirror a {
+  @apply text-blue-600 underline hover:text-blue-800;
+}
+
+.md-editor-dark .ProseMirror a {
+  @apply text-blue-400 hover:text-blue-300;
+}
+
+.md-editor .ProseMirror hr {
+  @apply my-4 border-gray-300;
+}
+
+.md-editor-dark .ProseMirror hr {
+  @apply border-gray-600;
+}
+
+.md-editor .ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-gray-400 float-left h-0 pointer-events-none;
+  content: attr(data-placeholder);
+}
+
+.md-editor-dark .ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-gray-500;
+}
+
+.toolbar-btn {
+  @apply p-2 rounded hover:bg-gray-200 transition-colors;
+}
+
+.md-editor-dark .toolbar-btn {
+  @apply hover:bg-gray-600 text-gray-100;
+}
+
+.toolbar-btn.active {
+  @apply bg-gray-300;
+}
+
+.md-editor-dark .toolbar-btn.active {
+  @apply bg-gray-500;
+}
+
+.toolbar-divider {
+  @apply w-px h-6 bg-gray-300 mx-1;
+}
+
+.md-editor-dark .toolbar-divider {
+  @apply bg-gray-500;
+}
+
+/* Prism.js syntax highlighting */
+.md-editor .ProseMirror pre {
+  @apply bg-gray-100 p-3 rounded my-2 overflow-x-auto font-mono text-sm;
+}
+
+.md-editor .ProseMirror pre code {
+  @apply bg-transparent p-0 text-gray-800;
+}
+
+.md-editor-dark .ProseMirror pre {
+  @apply bg-gray-900;
+}
+
+.md-editor-dark .ProseMirror pre code {
+  @apply text-gray-100;
+}
+
+/* Token colors for light theme */
+.md-editor .ProseMirror .token.comment,
+.md-editor .ProseMirror .token.prolog,
+.md-editor .ProseMirror .token.doctype,
+.md-editor .ProseMirror .token.cdata {
+  @apply text-gray-500;
+}
+
+.md-editor .ProseMirror .token.punctuation {
+  @apply text-gray-700;
+}
+
+.md-editor .ProseMirror .token.property,
+.md-editor .ProseMirror .token.tag,
+.md-editor .ProseMirror .token.boolean,
+.md-editor .ProseMirror .token.number,
+.md-editor .ProseMirror .token.constant,
+.md-editor .ProseMirror .token.symbol,
+.md-editor .ProseMirror .token.deleted {
+  @apply text-red-600;
+}
+
+.md-editor .ProseMirror .token.selector,
+.md-editor .ProseMirror .token.attr-name,
+.md-editor .ProseMirror .token.string,
+.md-editor .ProseMirror .token.char,
+.md-editor .ProseMirror .token.builtin,
+.md-editor .ProseMirror .token.inserted {
+  @apply text-green-600;
+}
+
+.md-editor .ProseMirror .token.operator,
+.md-editor .ProseMirror .token.entity,
+.md-editor .ProseMirror .token.url,
+.md-editor .ProseMirror .language-css .token.string,
+.md-editor .ProseMirror .style .token.string {
+  @apply text-yellow-700;
+}
+
+.md-editor .ProseMirror .token.atrule,
+.md-editor .ProseMirror .token.attr-value,
+.md-editor .ProseMirror .token.keyword {
+  @apply text-blue-600;
+}
+
+.md-editor .ProseMirror .token.function,
+.md-editor .ProseMirror .token.class-name {
+  @apply text-purple-600;
+}
+
+.md-editor .ProseMirror .token.regex,
+.md-editor .ProseMirror .token.important,
+.md-editor .ProseMirror .token.variable {
+  @apply text-orange-600;
+}
+
+/* Token colors for dark theme */
+.md-editor-dark .ProseMirror .token.comment,
+.md-editor-dark .ProseMirror .token.prolog,
+.md-editor-dark .ProseMirror .token.doctype,
+.md-editor-dark .ProseMirror .token.cdata {
+  @apply text-gray-500;
+}
+
+.md-editor-dark .ProseMirror .token.punctuation {
+  @apply text-gray-300;
+}
+
+.md-editor-dark .ProseMirror .token.property,
+.md-editor-dark .ProseMirror .token.tag,
+.md-editor-dark .ProseMirror .token.boolean,
+.md-editor-dark .ProseMirror .token.number,
+.md-editor-dark .ProseMirror .token.constant,
+.md-editor-dark .ProseMirror .token.symbol,
+.md-editor-dark .ProseMirror .token.deleted {
+  @apply text-red-400;
+}
+
+.md-editor-dark .ProseMirror .token.selector,
+.md-editor-dark .ProseMirror .token.attr-name,
+.md-editor-dark .ProseMirror .token.string,
+.md-editor-dark .ProseMirror .token.char,
+.md-editor-dark .ProseMirror .token.builtin,
+.md-editor-dark .ProseMirror .token.inserted {
+  @apply text-green-400;
+}
+
+.md-editor-dark .ProseMirror .token.operator,
+.md-editor-dark .ProseMirror .token.entity,
+.md-editor-dark .ProseMirror .token.url,
+.md-editor-dark .ProseMirror .language-css .token.string,
+.md-editor-dark .ProseMirror .style .token.string {
+  @apply text-yellow-300;
+}
+
+.md-editor-dark .ProseMirror .token.atrule,
+.md-editor-dark .ProseMirror .token.attr-value,
+.md-editor-dark .ProseMirror .token.keyword {
+  @apply text-blue-400;
+}
+
+.md-editor-dark .ProseMirror .token.function,
+.md-editor-dark .ProseMirror .token.class-name {
+  @apply text-purple-400;
+}
+
+.md-editor-dark .ProseMirror .token.regex,
+.md-editor-dark .ProseMirror .token.important,
+.md-editor-dark .ProseMirror .token.variable {
+  @apply text-orange-400;
+}
+
+/* Code language completion menu */
+.code-language-menu {
+  background: var(--clm-bg, #fff);
+  border: 1px solid var(--clm-border, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 200px;
+  max-width: 320px;
+  overflow: hidden;
+}
+
+.md-editor-dark .code-language-menu {
+  --clm-bg: #1f2937;
+  --clm-border: #374151;
+}
+
+.code-language-menu-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid var(--clm-border, #e5e7eb);
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+}
+
+.md-editor-dark .code-language-menu-input {
+  color: #f3f4f6;
+}
+
+.code-language-menu-input::placeholder {
+  color: #9ca3af;
+}
+
+.code-language-menu-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.code-language-menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.code-language-menu-item:hover,
+.code-language-menu-item.selected {
+  background: var(--clm-hover, #f3f4f6);
+}
+
+.md-editor-dark .code-language-menu-item:hover,
+.md-editor-dark .code-language-menu-item.selected {
+  --clm-hover: #374151;
+}
+
+.code-language-menu-item-name {
+  font-weight: 500;
+}
+
+.code-language-menu-item-aliases {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.code-language-menu-empty {
+  padding: 12px;
+  color: #9ca3af;
+  font-size: 13px;
+  text-align: center;
+}
