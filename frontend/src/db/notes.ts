@@ -12,9 +12,16 @@ export async function getNote(id: string): Promise<Note | undefined> {
   return db.get('notes', id)
 }
 
-export async function getNotesByNotebook(notebookId: string): Promise<Note[]> {
+export async function getNotesByNotebook(notebookId: string | null): Promise<Note[]> {
   const db = await getDB()
-  return db.getAllFromIndex('notes', 'by-notebook', notebookId)
+  const all = await db.getAll('notes')
+  return all.filter(n => n.notebookId === notebookId)
+}
+
+export async function getRootNotes(): Promise<Note[]> {
+  const db = await getDB()
+  const all = await db.getAll('notes')
+  return all.filter(n => n.notebookId === null)
 }
 
 export async function getAllNotes(): Promise<Note[]> {

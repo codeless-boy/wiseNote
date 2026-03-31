@@ -2,11 +2,11 @@ import { useEffect } from 'react'
 import { useState } from 'react'
 import { TriLayout } from '@/components/TriLayout'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { NotebookList } from '@/components/NotebookList'
+import { TreeView } from '@/components/TreeView'
 import { SearchPanel } from '@/components/SearchPanel'
 import { TagPanel } from '@/components/TagPanel'
 import { MainContent } from '@/components/MainContent'
-import { useNotebookStore, useTagStore } from '@/store'
+import { useNotebookStore, useTagStore, useNoteStore } from '@/store'
 import { seedDemoData } from '@/db/seed'
 import { FileText, Search, Tag, Settings } from 'lucide-react'
 
@@ -17,13 +17,15 @@ function App() {
 
   const { fetchNotebooks } = useNotebookStore()
   const { fetchTags } = useTagStore()
+  const { fetchRootNotes } = useNoteStore()
 
   useEffect(() => {
     seedDemoData().then(() => {
       fetchNotebooks()
       fetchTags()
+      fetchRootNotes()
     })
-  }, [fetchNotebooks, fetchTags])
+  }, [fetchNotebooks, fetchTags, fetchRootNotes])
 
   const activityItems = [
     { id: 'notebooks', icon: <FileText />, title: '笔记本' },
@@ -52,7 +54,7 @@ function App() {
   const renderSidebarContent = () => {
     switch (activeId) {
       case 'notebooks':
-        return <NotebookList />
+        return <TreeView />
       case 'search':
         return <SearchPanel />
       case 'tags':

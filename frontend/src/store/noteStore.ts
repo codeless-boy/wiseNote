@@ -5,12 +5,14 @@ import * as dbVersions from '@/db/versions'
 
 interface NoteState {
   notes: Note[]
+  rootNotes: Note[]
   currentNote: Note | null
   versions: NoteVersion[]
   loading: boolean
   
-  fetchNotes: (notebookId: string) => Promise<void>
-  createNote: (notebookId: string) => Promise<Note>
+  fetchNotes: (notebookId: string | null) => Promise<void>
+  fetchRootNotes: () => Promise<void>
+  createNote: (notebookId: string | null) => Promise<Note>
   updateNote: (id: string, updates: Partial<Note>) => Promise<void>
   deleteNote: (id: string) => Promise<void>
   setCurrentNote: (note: Note | null) => void
@@ -21,6 +23,7 @@ interface NoteState {
 
 export const useNoteStore = create<NoteState>((set, get) => ({
   notes: [],
+  rootNotes: [],
   currentNote: null,
   versions: [],
   loading: false,
@@ -29,6 +32,12 @@ export const useNoteStore = create<NoteState>((set, get) => ({
     set({ loading: true })
     const notes = await db.getNotesByNotebook(notebookId)
     set({ notes, loading: false })
+  },
+
+  fetchRootNotes: async () => {
+    set({ loading: true })
+    const rootNotes = await db.getRootNotes()
+    set({ rootNotes, loading: false })
   },
 
   createNote: async (notebookId) => {
@@ -43,7 +52,11 @@ export const useNoteStore = create<NoteState>((set, get) => ({
       updatedAt: Date.now(),
     }
     await db.createNote(note)
-    set({ notes: [...get().notes, note], currentNote: note })
+    if (notebookId === null) {
+      set({ rootNotes: [...get().rootNotes, note], currentNote: note })
+    } else {
+      set({ notes: [...get().notes, note], currentNote: note })
+    }
     return note
   },
 
