@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNotebookStore, useNoteStore } from '@/store'
-import { ChevronRight, ChevronDown, Plus, Folder, FileText } from 'lucide-react'
+import { ChevronRight, ChevronDown, Plus, Folder, FileText, AlertCircle } from 'lucide-react'
 import type { Notebook, Note } from '@/types'
 
 export function TreeView() {
   const { notebooks, createNotebook, fetchNotebooks } = useNotebookStore()
   const { notesByNotebook, rootNotes, currentNote, fetchNotes, fetchRootNotes, createNote, setCurrentNote } = useNoteStore()
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchNotebooks()
@@ -32,11 +33,43 @@ export function TreeView() {
     await fetchNotes(notebookId)
   }
 
+  const checkDuplicateName = useCallback((name: string, parentId: string | null, excludeId?: string): boolean => {
+    const siblingNotebooks = notebooks.filter(n => n.parentId === parentId && n.id !== excludeId)
+    const siblingNotes = parentId === null 
+      ? rootNotes 
+      : (notesByNotebook[parentId] || [])
+    
+    const notebookExists = siblingNotebooks.some(n => n.name === name)
+    const noteExists = siblingNotes.some(n => n.title === name)
+    
+    return notebookExists || noteExists
+  }, [notebooks, rootNotes, notesByNotebook])
+
   const handleCreateNotebook = async () => {
-    await createNotebook('新建笔记本')
+    const baseName = '新建笔记本'
+    let name = baseName
+    let counter = 1
+    
+    while (checkDuplicateName(name, null)) {
+      name = `${baseName} ${counter}`
+      counter++
+    }
+    
+    setError(null)
+    await createNotebook(name)
   }
 
   const handleCreateRootNote = async () => {
+    const baseTitle = '无标题'
+    let title = baseTitle
+    let counter = 1
+    
+    while (checkDuplicateName(title, null)) {
+      title = `${baseTitle} ${counter}`
+      counter++
+    }
+    
+    setError(null)
     await createNote(null)
   }
 
@@ -45,14 +78,39 @@ export function TreeView() {
       handleToggle(notebookId)
     }
     await fetchNotes(notebookId)
+    
+    const baseTitle = '无标题'
+    let title = baseTitle
+    let counter = 1
+    
+    while (checkDuplicateName(title, notebookId)) {
+      title = `${baseTitle} ${counter}`
+      counter++
+    }
+    
     await createNote(notebookId)
   }
 
-  const getRootNotebooks = () => notebooks.filter(n => n.parentId === null)
+  const getRootNotebooks = () => {
+    return notebooks
+      .filter(n => n.parentId === null)
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+  }
 
-  const getChildNotebooks = (parentId: string) => notebooks.filter(n => n.parentId === parentId)
+  const getChildNotebooks = (parentId: string) => {
+    return notebooks
+      .filter(n => n.parentId === parentId)
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'))
+  }
 
-  const getNotesForNotebook = (notebookId: string) => notesByNotebook[notebookId] || []
+  const getNotesForNotebook = (notebookId: string) => {
+    return (notesByNotebook[notebookId] || [])
+      .sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
+  }
+
+  const getSortedRootNotes = () => {
+    return [...rootNotes].sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
+  }
 
   const renderNote = (note: Note, level: number) => {
     const isSelected = currentNote?.id === note.id
@@ -86,10 +144,12 @@ export function TreeView() {
           style={{ paddingLeft: `${level * 16 + 8}px` }}
           onClick={() => handleSelectNotebook(notebook.id)}
         >
-          {hasChildren && (
+          {hasChildren ? (
             <button onClick={(e) => { e.stopPropagation(); handleToggle(notebook.id) }}>
               {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
             </button>
+          ) : (
+            <span style={{ width: '14px' }} />
           )}
           <Folder size={14} className="text-gray-500" />
           <span className="text-sm truncate flex-1">{notebook.name}</span>
@@ -133,8 +193,14 @@ export function TreeView() {
           <FileText size={18} />
         </button>
       </div>
+      {error && (
+        <div className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 text-sm">
+          <AlertCircle size={14} />
+          <span>{error}</span>
+        </div>
+      )}
       <div className="flex-1 overflow-auto">
-        {rootNotes.map(note => renderNote(note, 0))}
+        {getSortedRootNotes().map(note => renderNote(note, 0))}
         {getRootNotebooks().map(notebook => renderNotebook(notebook))}
       </div>
     </div>
