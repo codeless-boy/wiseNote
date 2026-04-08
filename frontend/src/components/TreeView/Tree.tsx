@@ -1,5 +1,5 @@
-import React from 'react'
-import { Tree as ArboristTree } from 'react-arborist'
+import React, { useImperativeHandle, useRef, forwardRef } from 'react'
+import { Tree as ArboristTree, TreeApi } from 'react-arborist'
 import type { TreeNode } from './types'
 import type { NodeRendererProps } from 'react-arborist'
 
@@ -12,10 +12,31 @@ interface TreeProps {
   children: (props: NodeRendererProps<TreeNode>) => React.ReactNode
 }
 
-export function Tree({ data, onSelect, selectedId, children }: TreeProps) {
+export interface TreeRef {
+  expand: (nodeId: string) => void
+  collapse: (nodeId: string) => void
+}
+
+export const Tree = forwardRef<TreeRef, TreeProps>(({ data, onSelect, selectedId, children }, ref) => {
+  const treeRef = useRef<TreeApi<TreeNode> | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    expand: (nodeId: string) => {
+      if (treeRef.current) {
+        treeRef.current.open(nodeId)
+      }
+    },
+    collapse: (nodeId: string) => {
+      if (treeRef.current) {
+        treeRef.current.close(nodeId)
+      }
+    },
+  }))
+
   return (
     <div className="flex-1 overflow-hidden">
       <ArboristTree
+        ref={treeRef}
         data={data}
         children={children}
         rowHeight={28}
@@ -30,4 +51,4 @@ export function Tree({ data, onSelect, selectedId, children }: TreeProps) {
       />
     </div>
   )
-}
+})

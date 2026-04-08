@@ -3,6 +3,8 @@ import { ChevronRight, ChevronDown, Folder, FileText } from 'lucide-react'
 import type { NodeRendererProps } from 'react-arborist'
 import type { TreeNode } from './types'
 import { NodeActions } from './NodeActions'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface TreeNodeProps extends NodeRendererProps<TreeNode> {
   onCreateNote: (notebookId: string) => void
@@ -55,15 +57,17 @@ export function TreeNode({
       onClick={handleClick}
     >
       {isNotebook && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={(e) => {
             e.stopPropagation()
             node.toggle()
           }}
-          className="p-0.5"
+          className="h-6 w-6 p-0"
         >
           {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        </button>
+        </Button>
       )}
       
       {!isNotebook && <span style={{ width: 14 }} />}
@@ -76,13 +80,12 @@ export function TreeNode({
         )}
         
         {isEditing ? (
-          <input
-            type="text"
+          <Input
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleKeyDown}
             onBlur={() => onEditComplete(node.id, editValue)}
-            className="flex-1 text-sm bg-white border border-blue-500 rounded px-1"
+            className="flex-1 h-7 text-sm"
             autoFocus
           />
         ) : (

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTagStore } from '@/store'
 import { Plus, Tag as TagIcon } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export function TagPanel() {
   const { tags, fetchTags, createTag } = useTagStore()
@@ -25,24 +27,25 @@ export function TagPanel() {
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between px-2 py-2 border-b">
         <span className="font-medium text-sm">标签</span>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setIsCreating(!isCreating)}
-          className="p-1 hover:bg-gray-100 rounded"
+          className="h-7 w-7"
         >
           <Plus size={16} />
-        </button>
+        </Button>
       </div>
       
       {isCreating && (
         <div className="px-2 py-2 border-b">
-          <input
-            type="text"
+          <Input
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             onBlur={handleCreate}
             placeholder="输入标签名称"
-            className="w-full px-2 py-1 text-sm border rounded outline-none focus:border-blue-500"
+            className="h-8"
             autoFocus
           />
         </div>

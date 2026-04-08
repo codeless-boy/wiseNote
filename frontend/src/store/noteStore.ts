@@ -52,9 +52,21 @@ export const useNoteStore = create<NoteState>((set, get) => ({
   },
 
   createNote: async (notebookId) => {
+    const state = get()
+    const existingNotes = notebookId === null 
+      ? state.rootNotes 
+      : (state.notesByNotebook[notebookId] || [])
+    
+    let title = '无标题'
+    let counter = 1
+    while (existingNotes.some(n => n.title === title)) {
+      title = `无标题 ${counter}`
+      counter++
+    }
+    
     const note: Note = {
       id: crypto.randomUUID(),
-      title: '无标题',
+      title,
       content: '',
       notebookId,
       tags: [],

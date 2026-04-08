@@ -36,9 +36,10 @@ export function checkDuplicateName(
   const { notesByNotebook, rootNotes } = useNoteStore.getState()
   
   const siblingNotebooks = notebooks.filter(n => n.parentId === parentId && n.id !== excludeId)
-  const siblingNotes = parentId === null 
+  const siblingNotes = (parentId === null 
     ? rootNotes 
     : (notesByNotebook[parentId] || [])
+  ).filter(n => n.id !== excludeId)
   
   return siblingNotebooks.some(n => n.name === name) || siblingNotes.some(n => n.title === name)
 }

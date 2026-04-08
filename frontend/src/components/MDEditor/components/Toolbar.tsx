@@ -1,5 +1,6 @@
 import React from 'react'
 import { ToolbarButton } from './ToolbarButton'
+import { Separator } from '@/components/ui/separator'
 
 interface ToolbarProps {
   onBold: () => void
@@ -121,30 +122,30 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       <ToolbarButton icon={<UndoIcon />} label="撤销" onClick={onUndo} disabled={!canUndo} />
       <ToolbarButton icon={<RedoIcon />} label="重做" onClick={onRedo} disabled={!canRedo} />
       
-      <div className="toolbar-divider" />
+      <Separator orientation="vertical" className="mx-1 h-4" />
       
       <ToolbarButton icon={<BoldIcon />} label="粗体" onClick={onBold} />
       <ToolbarButton icon={<ItalicIcon />} label="斜体" onClick={onItalic} />
       <ToolbarButton icon={<StrikeIcon />} label="删除线" onClick={onStrike} />
       
-      <div className="toolbar-divider" />
+      <Separator orientation="vertical" className="mx-1 h-4" />
       
       <ToolbarButton icon={<HeadingIcon />} label="标题1" onClick={() => onHeading(1)} />
       <ToolbarButton icon={<HeadingIcon />} label="标题2" onClick={() => onHeading(2)} />
       <ToolbarButton icon={<HeadingIcon />} label="标题3" onClick={() => onHeading(3)} />
       
-      <div className="toolbar-divider" />
+      <Separator orientation="vertical" className="mx-1 h-4" />
       
       <ToolbarButton icon={<QuoteIcon />} label="引用" onClick={onQuote} />
       <ToolbarButton icon={<CodeIcon />} label="行内代码" onClick={onCode} />
       <ToolbarButton icon={<CodeIcon />} label="代码块" onClick={onCodeBlock} />
       
-      <div className="toolbar-divider" />
+      <Separator orientation="vertical" className="mx-1 h-4" />
       
       <ToolbarButton icon={<ListBulletIcon />} label="无序列表" onClick={onBulletList} />
       <ToolbarButton icon={<ListOrderedIcon />} label="有序列表" onClick={onOrderedList} />
       
-      <div className="toolbar-divider" />
+      <Separator orientation="vertical" className="mx-1 h-4" />
       
       <ToolbarButton icon={<LinkIcon />} label="链接" onClick={onLink} />
       <ToolbarButton icon={<ImageIcon />} label="图片" onClick={onImage} />

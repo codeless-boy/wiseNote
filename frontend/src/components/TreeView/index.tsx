@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNoteStore } from '@/store'
-import { Tree } from './Tree'
+import { Tree, TreeRef } from './Tree'
 import { TreeNode } from './TreeNode'
 import { Toolbar } from './Toolbar'
 import { useTreeAdapter } from './hooks/useTreeAdapter'
 import { useTreeActions } from './hooks/useTreeActions'
 import type { TreeNode as TreeNodeType } from './types'
 import { useNotebookStore } from '@/store/notebookStore'
+import { validateName, generateUniqueName } from './utils'
+import { useAlertDialog } from '@/hooks/useAlertDialog'
 
 export function TreeView() {
   const { fetchNotebooks } = useNotebookStore()
@@ -19,9 +21,11 @@ export function TreeView() {
     onDeleteNotebook,
     onDeleteNote,
   } = useTreeActions()
+  const { showAlert, showConfirm, AlertDialogComponent } = useAlertDialog()
   
   const [editingId, setEditingId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined)
+  const treeRef = useRef<TreeRef>(null)
   
   useEffect(() => {
     fetchNotebooks()
@@ -50,6 +54,8 @@ export function TreeView() {
   }
   
   const handleCreateSubNotebook = async (parentId: string) => {
+    treeRef.current?.expand(parentId)
+    await new Promise(resolve => setTimeout(resolve, 50))
     const id = await onCreateNotebook(parentId)
     if (id) {
       setEditingId(id)
@@ -61,15 +67,37 @@ export function TreeView() {
   }
   
   const handleEditComplete = async (nodeId: string, newName: string) => {
+    if (editingId !== nodeId) return
+    
     const node = findNode(treeData, nodeId)
     if (!node) return
+    
+    const validationError = validateName(newName)
+    if (validationError) {
+      await showAlert(validationError)
+      return
+    }
     
     try {
       await onRename(nodeId, newName, node.type, node.parentId)
       setEditingId(null)
     } catch (error) {
-      if (error instanceof Error) {
-        alert(error.message)
+      if (error instanceof Error && error.message === '名称已存在') {
+        const confirmed = await showConfirm(
+          '名称已存在',
+          `名称 "${newName}" 已存在。\n\n点击"确定"自动添加数字后缀\n点击"取消"恢复原名称`,
+          '确定',
+          '取消'
+        )
+        if (confirmed) {
+          const uniqueName = generateUniqueName(newName, node.parentId, nodeId)
+          await onRename(nodeId, uniqueName, node.type, node.parentId)
+          setEditingId(null)
+        } else {
+          setEditingId(null)
+        }
+      } else if (error instanceof Error) {
+        await showAlert(error.message)
       }
     }
   }
@@ -109,37 +137,41 @@ export function TreeView() {
   }
   
   return (
-    <div className="h-full flex flex-col">
-      <Toolbar
-        onCreateNotebook={handleCreateNotebook}
-        onCreateRootNote={handleCreateRootNote}
-        onExpandAll={handleExpandAll}
-        onCollapseAll={handleCollapseAll}
-      />
-      
-      <Tree
-        data={treeData}
-        selectedId={selectedId}
-        onSelect={(nodeId, type) => {
-          if (type === 'note') {
-            handleSelectNote(nodeId)
-          }
-        }}
-      >
-        {(props) => (
-          <TreeNode
-            {...props}
-            onCreateNote={handleCreateNoteInNotebook}
-            onCreateSubNotebook={handleCreateSubNotebook}
-            onRename={handleRename}
-            onDelete={handleDelete}
-            onSelectNote={handleSelectNote}
-            isEditing={editingId === props.node.id}
-            onEditComplete={handleEditComplete}
-          />
-        )}
-      </Tree>
-    </div>
+    <>
+      <AlertDialogComponent />
+      <div className="h-full flex flex-col">
+        <Toolbar
+          onCreateNotebook={handleCreateNotebook}
+          onCreateRootNote={handleCreateRootNote}
+          onExpandAll={handleExpandAll}
+          onCollapseAll={handleCollapseAll}
+        />
+        
+        <Tree
+          ref={treeRef}
+          data={treeData}
+          selectedId={selectedId}
+          onSelect={(nodeId, type) => {
+            if (type === 'note') {
+              handleSelectNote(nodeId)
+            }
+          }}
+        >
+          {(props) => (
+            <TreeNode
+              {...props}
+              onCreateNote={handleCreateNoteInNotebook}
+              onCreateSubNotebook={handleCreateSubNotebook}
+              onRename={handleRename}
+              onDelete={handleDelete}
+              onSelectNote={handleSelectNote}
+              isEditing={editingId === props.node.id}
+              onEditComplete={handleEditComplete}
+            />
+          )}
+        </Tree>
+      </div>
+    </>
   )
 }
 

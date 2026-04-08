@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useSearchStore, useNoteStore } from '@/store'
 import { Search, FileText } from 'lucide-react'
+import { Input } from '@/components/ui/input'
 
 export function SearchPanel() {
   const { query, results, setQuery, search } = useSearchStore()
@@ -35,13 +36,12 @@ export function SearchPanel() {
     <div className="h-full flex flex-col">
       <div className="p-2 border-b">
         <div className="relative">
-          <Search size={16} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="搜索笔记..."
-            className="w-full pl-8 pr-2 py-1 text-sm border rounded outline-none focus:border-blue-500"
+            className="pl-9 h-8"
           />
         </div>
       </div>

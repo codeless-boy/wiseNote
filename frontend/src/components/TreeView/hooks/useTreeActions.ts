@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useNotebookStore } from '@/store/notebookStore'
 import { useNoteStore } from '@/store/noteStore'
-import { generateUniqueName, checkDuplicateName, validateName } from '../utils'
+import { generateUniqueName, checkDuplicateName } from '../utils'
 
 export function useTreeActions() {
   const { createNotebook, deleteNotebook, updateNotebook, fetchNotebooks } = useNotebookStore()
@@ -11,27 +11,18 @@ export function useTreeActions() {
     const name = generateUniqueName('新建笔记本', parentId)
     const notebook = await createNotebook(name, parentId)
     
-    await fetchNotebooks()
-    
     return notebook.id
-  }, [createNotebook, fetchNotebooks])
+  }, [createNotebook])
   
   const onCreateNote = useCallback(async (notebookId: string | null = null) => {
-    await createNote(notebookId)
+    const note = await createNote(notebookId)
     
-    if (notebookId !== null) {
-      await fetchNotes(notebookId)
-    } else {
-      await fetchRootNotes()
-    }
-    
-    const note = useNoteStore.getState().currentNote
     if (note) {
       setCurrentNote(note)
     }
     
     return note?.id
-  }, [createNote, fetchNotes, fetchRootNotes, setCurrentNote])
+  }, [createNote, setCurrentNote])
   
   const onRename = useCallback(async (
     nodeId: string,
@@ -39,11 +30,6 @@ export function useTreeActions() {
     type: 'notebook' | 'note',
     parentId: string | null
   ) => {
-    const validationError = validateName(newName)
-    if (validationError) {
-      throw new Error(validationError)
-    }
-    
     if (checkDuplicateName(newName, parentId, nodeId)) {
       throw new Error('名称已存在')
     }

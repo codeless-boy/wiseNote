@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Notebook } from '@/types'
+import { Input } from '@/components/ui/input'
 
 interface NotebookItemProps {
   notebook: Notebook
@@ -46,13 +47,12 @@ export function NotebookItem({
       onDoubleClick={handleDoubleClick}
     >
       {isEditing ? (
-        <input
-          type="text"
+        <Input
           value={editName}
           onChange={(e) => setEditName(e.target.value)}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="flex-1 text-sm outline-none border border-blue-500 px-1"
+          className="flex-1 h-7 text-sm"
           autoFocus
         />
       ) : (
